@@ -11,6 +11,7 @@ export default {
           res.status(201).json({ sucess: true, usuario: response });
         })
         .catch((error) => {
+          console.log(error)
           res.status(400).json({
             error: error,
             sucess: false,
@@ -68,6 +69,7 @@ export default {
           res.status(200).json({ success: true, usuarios: response });
         })
         .catch((error) => {
+          console.log(error)
           res.status(400).json({
             error: error,
             success: false,
