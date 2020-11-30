@@ -9,7 +9,6 @@ module.exports = (sequelize, DataTypes) => {
         tipo_lancamento: DataTypes.STRING,
         status_lancamento: DataTypes.STRING,
         usuario_id: DataTypes.INTEGER,
-
     }, {
         freezeTableName: true,
         tableName: 'lancamentos'

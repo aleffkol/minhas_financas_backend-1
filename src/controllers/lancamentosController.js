@@ -47,6 +47,7 @@ export default {
             success: false,
             message: "Ocorreu um erro enquanto os dados eram atualizados.",
           });
+          console.log(error)
         });
     } catch (error) {
       res.status(500).json({

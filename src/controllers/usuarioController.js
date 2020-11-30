@@ -63,6 +63,7 @@ export default {
   list: (req, res, next) => {
     try {
       Usuario.findAll({
+        // where:{usuario_id: req.params.id},
         // order: ["nome"],
       })
         .then((response) => {
