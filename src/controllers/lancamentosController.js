@@ -1,5 +1,7 @@
 import { response } from "express";
 import { Lancamentos, Usuario } from "../database/models";
+import { Op } from "sequelize";
+import { startOfDay, endOfDay, parseISO } from "date-fns";
 
 export default {
   add: (req, res, next) => {
@@ -47,7 +49,7 @@ export default {
             success: false,
             message: "Ocorreu um erro enquanto os dados eram atualizados.",
           });
-          console.log(error)
+          console.log(error);
         });
     } catch (error) {
       res.status(500).json({
@@ -72,7 +74,6 @@ export default {
             as: "usuarios",
           },
         ],
-        
       })
         .then((response) => {
           res.status(200).json({ success: true, lancamentos: response });
@@ -129,7 +130,7 @@ export default {
       }
       throw new Error("Post not found");
     } catch (error) {
-      console.log(error)
+      console.log(error);
       return res.status(500).send(error.message);
     }
   },
@@ -137,7 +138,7 @@ export default {
   listByUser: (req, res, next) => {
     try {
       Lancamentos.findAll({
-        where:{usuario_id: req.params.id},
+        where: { usuario_id: req.params.id },
         attributes: {
           exclude: ["usuario_id"],
         },
@@ -147,7 +148,6 @@ export default {
             as: "usuarios",
           },
         ],
-        
       })
         .then((response) => {
           res.status(200).json({ success: true, lancamentos: response });
@@ -171,4 +171,356 @@ export default {
     }
   },
 
+  listLancamentoConfirmado: (req, res, next) => {
+    try {
+      Lancamentos.findAll({
+        where: { usuario_id: req.params.id },
+        attributes: {
+          exclude: ["usuario_id"],
+        },
+        include: [
+          {
+            model: Usuario,
+            as: "usuarios",
+            // where:{usuario_id: req.params.id},
+          },
+        ],
+      })
+        .then((response) => {
+          res.status(200).json({
+            success: true,
+            // lancamentos: response
+            lancamentos: response.filter(
+              (lanc) => lanc.status === "Confirmado"
+            ),
+            // lancamentos: lancamentos.filter((lanc) => lancamentos.status == 'Confirmado')
+          });
+        })
+        .catch((error) => {
+          console.log(error);
+          res.status(400).json({
+            error: error,
+            success: false,
+            message: "Ocorreu um erro enquanto os dados eram recuperados.",
+          });
+        });
+    } catch (error) {
+      res.status(500).json({
+        error: error,
+        success: false,
+        message: "Ocorreu um erro desconhecido com o sistema.",
+      });
+
+      next(error);
+    }
+  },
+
+  listLancamentoNegativo: (req, res, next) => {
+    try {
+      Lancamentos.findAll({
+        where: { usuario_id: req.params.id },
+        attributes: {
+          exclude: ["usuario_id"],
+        },
+        include: [
+          {
+            model: Usuario,
+            as: "usuarios",
+            // where:{usuario_id: req.params.id},
+          },
+        ],
+      })
+        .then((response) => {
+          res.status(200).json({
+            success: true,
+            // lancamentos: response
+            lancamentos: response.filter((lanc) => lanc.status === "Negativo"),
+            // lancamentos: lancamentos.filter((lanc) => lancamentos.status == 'Confirmado')
+          });
+        })
+        .catch((error) => {
+          console.log(error);
+          res.status(400).json({
+            error: error,
+            success: false,
+            message: "Ocorreu um erro enquanto os dados eram recuperados.",
+          });
+        });
+    } catch (error) {
+      res.status(500).json({
+        error: error,
+        success: false,
+        message: "Ocorreu um erro desconhecido com o sistema.",
+      });
+
+      next(error);
+    }
+  },
+
+  listLancamentoPendentes: (req, res, next) => {
+    try {
+      Lancamentos.findAll({
+        where: { usuario_id: req.params.id },
+        attributes: {
+          exclude: ["usuario_id"],
+        },
+        include: [
+          {
+            model: Usuario,
+            as: "usuarios",
+            // where:{usuario_id: req.params.id},
+          },
+        ],
+      })
+        .then((response) => {
+          res.status(200).json({
+            success: true,
+            // lancamentos: response
+            lancamentos: response.filter((lanc) => lanc.status === "Pendente"),
+            // lancamentos: lancamentos.filter((lanc) => lancamentos.status == 'Confirmado')
+          });
+        })
+        .catch((error) => {
+          console.log(error);
+          res.status(400).json({
+            error: error,
+            success: false,
+            message: "Ocorreu um erro enquanto os dados eram recuperados.",
+          });
+        });
+    } catch (error) {
+      res.status(500).json({
+        error: error,
+        success: false,
+        message: "Ocorreu um erro desconhecido com o sistema.",
+      });
+
+      next(error);
+    }
+  },
+
+  listLancamentoDespesa: (req, res, next) => {
+    try {
+      Lancamentos.findAll({
+        where: { usuario_id: req.params.id },
+        attributes: {
+          exclude: ["usuario_id"],
+        },
+        include: [
+          {
+            model: Usuario,
+            as: "usuarios",
+          },
+        ],
+      })
+        .then((response) => {
+          res.status(200).json({
+            success: true,
+            // lancamentos: response
+            lancamentos: response.filter(
+              (lanc) => lanc.tipo_lancamento === "Despesa"
+            ),
+          });
+        })
+        .catch((error) => {
+          console.log(error);
+          res.status(400).json({
+            error: error,
+            success: false,
+            message: "Ocorreu um erro enquanto os dados eram recuperados.",
+          });
+        });
+    } catch (error) {
+      res.status(500).json({
+        error: error,
+        success: false,
+        message: "Ocorreu um erro desconhecido com o sistema.",
+      });
+
+      next(error);
+    }
+  },
+
+  listLancamentoReceita: (req, res, next) => {
+    try {
+      Lancamentos.findAll({
+        where: { usuario_id: req.params.id },
+        attributes: {
+          exclude: ["usuario_id"],
+        },
+        include: [
+          {
+            model: Usuario,
+            as: "usuarios",
+            // where:{usuario_id: req.params.id},
+          },
+        ],
+      })
+        .then((response) => {
+          res.status(200).json({
+            success: true,
+            // lancamentos: response
+            lancamentos: response.filter(
+              (lanc) => lanc.tipo_lancamento === "Receita"
+            ),
+            // lancamentos: lancamentos.filter((lanc) => lancamentos.status == 'Confirmado')
+          });
+        })
+        .catch((error) => {
+          console.log(error);
+          res.status(400).json({
+            error: error,
+            success: false,
+            message: "Ocorreu um erro enquanto os dados eram recuperados.",
+          });
+        });
+    } catch (error) {
+      res.status(500).json({
+        error: error,
+        success: false,
+        message: "Ocorreu um erro desconhecido com o sistema.",
+      });
+
+      next(error);
+    }
+  },
+
+  listarPorAno: (req, res, next) => {
+    try {
+      Lancamentos.findAll({
+        // where:{usuario_id: req.params.id},
+        attributes: {
+          exclude: ["usuario_id"],
+        },
+        include: [
+          {
+            model: Usuario,
+            as: "usuarios",
+          },
+        ],
+        where: {
+          usuario_id: req.params.id,
+          data: {
+            [Op.between]: [
+                "2019-12-31","2020-12-31"
+                // dataAtual,"2020-12-31"
+                // startDate, endDate
+            ],
+     
+          },
+        },
+      })
+        .then((response) => {
+          res.status(200).json({ success: true, lancamentos: response });
+        })
+        .catch((error) => {
+          
+          res.status(400).json({
+            error: error,
+            success: false,
+            message: "Ocorreu um erro enquanto os dados eram recuperados.",
+          });
+        });
+    } catch (error) {
+      console.log(error)
+      res.status(500).json({
+        error: error,
+        success: false,
+        message: "Ocorreu um erro desconhecido com o sistema.",
+      });
+
+      next(error);
+    }
+  },
+  listarPorPrimeiroSemestre: (req, res, next) => {
+    try {
+      Lancamentos.findAll({
+        // where:{usuario_id: req.params.id},
+        attributes: {
+          exclude: ["usuario_id"],
+        },
+        include: [
+          {
+            model: Usuario,
+            as: "usuarios",
+          },
+        ],
+        where: {
+          usuario_id: req.params.id,
+          data: {
+            [Op.between]: [
+                "2019-12-31","2020-07-01"
+            ],
+     
+          },
+        },
+      })
+        .then((response) => {
+          res.status(200).json({ success: true, lancamentos: response });
+        })
+        .catch((error) => {
+          
+          res.status(400).json({
+            error: error,
+            success: false,
+            message: "Ocorreu um erro enquanto os dados eram recuperados.",
+          });
+        });
+    } catch (error) {
+      console.log(error)
+      res.status(500).json({
+        error: error,
+        success: false,
+        message: "Ocorreu um erro desconhecido com o sistema.",
+      });
+
+      next(error);
+    }
+  },
+
+  listarPorSegundoSemestre: (req, res, next) => {
+    try {
+      Lancamentos.findAll({
+        // where:{usuario_id: req.params.id},
+        attributes: {
+          exclude: ["usuario_id"],
+        },
+        include: [
+          {
+            model: Usuario,
+            as: "usuarios",
+          },
+        ],
+        where: {
+          usuario_id: req.params.id,
+          data: {
+            [Op.between]: [
+                "2020-07-01","2021-01-01"
+            ],
+     
+          },
+        },
+      })
+        .then((response) => {
+          res.status(200).json({ success: true, lancamentos: response });
+        })
+        .catch((error) => {
+          
+          res.status(400).json({
+            error: error,
+            success: false,
+            message: "Ocorreu um erro enquanto os dados eram recuperados.",
+          });
+        });
+    } catch (error) {
+      console.log(error)
+      res.status(500).json({
+        error: error,
+        success: false,
+        message: "Ocorreu um erro desconhecido com o sistema.",
+      });
+
+      next(error);
+    }
+  },
 };
